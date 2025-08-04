@@ -1,4 +1,11 @@
-import React, { useState } from 'react';
+import ChatAssistant from './components/ChatAssistant';
+
+function App() {
+  return <ChatAssistant />;
+}
+
+export default App;
+
 
 const ChatAssistant = () => {
   const [messages, setMessages] = useState([
