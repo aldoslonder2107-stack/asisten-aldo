@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([])
@@ -25,7 +24,7 @@ const ChatBox = () => {
     if (!voice || !text) return
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.voice = voice
-    utterance.lang = 'id-ID' // agar intonasi cocok bahasa Indonesia
+    utterance.lang = 'id-ID'
     utterance.rate = 1
     window.speechSynthesis.speak(utterance)
   }
@@ -37,5 +36,36 @@ const ChatBox = () => {
     setMessages(prev => [...prev, userMessage])
     setInput('')
 
-    if (!import.meta.env.VITE
-        
+    const demoReply = "Halo Aldo! Ini mode demo karena belum ada API key 😊"
+    setMessages(prev => [...prev, { sender: 'Asisten Aldo', text: demoReply }])
+    speak(demoReply)
+  }
+
+  return (
+    <div className="p-4 max-w-xl mx-auto">
+      <div className="bg-white shadow rounded-lg p-4 h-96 overflow-y-auto mb-4">
+        {messages.map((msg, i) => (
+          <div key={i} className={`mb-2 ${msg.sender === 'Aldo' ? 'text-right' : 'text-left'}`}>
+            <span className={`inline-block p-2 rounded ${msg.sender === 'Aldo' ? 'bg-blue-200' : 'bg-gray-200'}`}>
+              <strong>{msg.sender}:</strong> {msg.text}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          className="flex-grow p-2 border rounded"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Tulis pesanmu..."
+          onKeyDown={e => e.key === 'Enter' && sendMessage()}
+        />
+        <button className="bg-blue-600 text-white px-4 py-2 rounded" onClick={sendMessage}>
+          Kirim
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default ChatBox
