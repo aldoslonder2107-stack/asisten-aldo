@@ -1,22 +1,43 @@
-          import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 const ChatAssistant = () => {
   const [messages, setMessages] = useState([
     { sender: 'asisten', text: 'Hai Aldo! Ada yang bisa aku bantu hari ini?' }
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     const userMessage = { sender: 'aldo', text: input };
-    const assistantReply = {
-      sender: 'asisten',
-      text: 'Terima kasih! Saat ini aku belum terhubung ke ChatGPT asli, tapi aku tetap bisa bantu tampilkan UI-nya!'
-    };
-
-    setMessages([...messages, userMessage, assistantReply]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
+    setLoading(true);
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: input }
+          ]
+        }),
+      });
+
+      const data = await response.json();
+      const reply = data.choices[0].message.content;
+      setMessages((prev) => [...prev, { sender: 'asisten', text: reply }]);
+    } catch (err) {
+      setMessages((prev) => [...prev, { sender: 'asisten', text: 'Maaf, terjadi kesalahan saat menghubungi server.' }]);
+    }
+    setLoading(false);
   };
 
   return (
@@ -30,6 +51,7 @@ const ChatAssistant = () => {
             </span>
           </div>
         ))}
+        {loading && <div className="text-left text-gray-500">Asisten sedang mengetik...</div>}
       </div>
       <div className="flex gap-2">
         <input
@@ -43,6 +65,7 @@ const ChatAssistant = () => {
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleSend}
+          disabled={loading}
         >
           Kirim
         </button>
@@ -52,4 +75,4 @@ const ChatAssistant = () => {
 };
 
 export default ChatAssistant;
-        
+                                              
