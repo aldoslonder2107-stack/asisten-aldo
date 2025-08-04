@@ -1,11 +1,4 @@
-import ChatAssistant from './components/ChatAssistant';
-
-function App() {
-  return <ChatAssistant />;
-}
-
-export default App;
-
+import React, { useState } from 'react';
 
 const ChatAssistant = () => {
   const [messages, setMessages] = useState([
@@ -42,8 +35,9 @@ const ChatAssistant = () => {
       const reply = data.choices[0].message.content;
       setMessages((prev) => [...prev, { sender: 'asisten', text: reply }]);
     } catch (err) {
-      setMessages((prev) => [...prev, { sender: 'asisten', text: 'Maaf, terjadi kesalahan saat menghubungi server.' }]);
+      setMessages((prev) => [...prev, { sender: 'asisten', text: '⚠️ Gagal menghubungi ChatGPT. Cek API key atau koneksi kamu ya!' }]);
     }
+
     setLoading(false);
   };
 
