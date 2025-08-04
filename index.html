@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Asisten Aldo (HTML)</title>
+  <style>
+    body { font-family: sans-serif; background: #f3f4f6; margin: 0; padding: 0; }
+    .header { background: #2563eb; color: white; text-align: center; padding: 1rem; font-weight: bold; }
+    .chatbox { max-width: 600px; margin: auto; padding: 1rem; background: white; min-height: 400px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow-y: auto; }
+    .msg { margin: 0.5rem 0; }
+    .user { text-align: right; color: blue; }
+    .bot { text-align: left; color: green; }
+    .input-area { display: flex; margin-top: 1rem; gap: 0.5rem; }
+    input { flex-grow: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="header">👋 Selamat Datang, Aldo!</div>
+  <div class="chatbox" id="chatbox"></div>
+  <div class="input-area" style="max-width:600px; margin:auto;">
+    <input type="text" id="input" placeholder="Tulis pesanmu..." />
+    <button onclick="send()">Kirim</button>
+  </div>
+
+<script>
+  const apiKey = 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
+
+  const chatbox = document.getElementById("chatbox");
+  const voice = window.speechSynthesis;
+
+  function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID';
+    const selected = speechSynthesis.getVoices().find(v => v.name.toLowerCase().includes('google') && v.lang.includes('en'));
+    if (selected) utterance.voice = selected;
+    voice.speak(utterance);
+  }
+
+  async function send() {
+    const input = document.getElementById("input");
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    showMessage("Aldo", userMsg, "user");
+    input.value = "";
+
+    if (!apiKey || apiKey.includes("ISI_API_KEY")) {
+      const warn = "❌ API key belum diatur!";
+      showMessage("Asisten", warn, "bot");
+      speak(warn);
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: userMsg }],
+        }),
+      });
+
+      const data = await res.json();
+      const reply = data.choices[0].message.content;
+      showMessage("Asisten", reply, "bot");
+      speak(reply);
+    } catch (e) {
+      const err = "⚠️ Gagal menghubungi GPT.";
+      showMessage("Asisten", err, "bot");
+      speak(err);
+    }
+  }
+
+  function showMessage(sender, text, type) {
+    const msg = document.createElement("div");
+    msg.className = "msg " + type;
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chatbox.appendChild(msg);
+    chatbox.scrollTop = chatbox.scrollHeight;
+  }
+</script>
+</body>
+</html>
